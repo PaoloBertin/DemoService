@@ -25,7 +25,7 @@ class DemoControllerTest {
     private String url = "/service1";
 
     @Test
-    void operations() throws Exception {
+    void operationsSuccessTest() throws Exception {
 
         DemoInput demoInput = new DemoInput(10.0, 2.0, "div");
 
@@ -34,9 +34,28 @@ class DemoControllerTest {
         String requestJson = objectMapper.writeValueAsString(demoInput);
 
         mvc.perform(post(url + "/calculate").contentType(MediaType.APPLICATION_JSON)
-                                           .content(requestJson))
+                                            .content(requestJson))
            .andExpect(status().isOk())
+           .andExpect(jsonPath("$.message", equalTo("ok")))
            .andExpect(jsonPath("$.result", equalTo(5.0)))
         ;
+    }
+
+    @Test
+    void OperationFailedTest() throws Exception {
+
+        DemoInput demoInput = new DemoInput(10.0, 2.0, "dov");
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
+        String requestJson = objectMapper.writeValueAsString(demoInput);
+
+        mvc.perform(post(url + "/calculate").contentType(MediaType.APPLICATION_JSON)
+                                            .content(requestJson))
+           .andExpect(status().isOk())
+           .andExpect(jsonPath("$.message", equalTo("invalid operation")))
+           .andExpect(jsonPath("$.result", equalTo(0.0)))
+        ;
+
     }
 }
